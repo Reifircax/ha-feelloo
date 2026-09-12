@@ -133,7 +133,7 @@ class FeellooConfigFlow(ConfigFlow, domain=DOMAIN):
     def async_get_options_flow(config_entry: ConfigEntry) -> FeellooOptionsFlowHandler:
         """Get the options flow for this handler."""
         # Modern OptionsFlow (HA >= 2026.9) exposes a read-only `config_entry`
-        # property resolved from hass.config_entries - no need to pass it here.
+        # property resolved from hass.config_entries — no need to pass it here.
         return FeellooOptionsFlowHandler()
 
 
@@ -143,10 +143,28 @@ class FeellooOptionsFlowHandler(OptionsFlow):
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> FlowResult:
-        """Manage the options."""
-        errors: dict[str, str] = {}
+        """Start the options flow by showing the menu."""
+        return await self.async_step_menu()
 
-        current_options = self.config_entry.options or {}
+    async def async_step_menu(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Show the configuration menu."""
+        if user_input is not None:
+            next_step = user_input["next_step_id"]
+            if next_step == "polling":
+                return await self.async_step_polling()
+            return await self.async_step_credentials()
+        return self.async_show_menu(
+            step_id="menu",
+            menu_options=["credentials", "polling"],
+        )
+
+    async def async_step_credentials(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Update Feelloo account credentials."""
+        errors: dict[str, str] = {}
 
         if user_input is not None:
             email = user_input[CONF_EMAIL].strip().casefold()
@@ -159,25 +177,54 @@ class FeellooOptionsFlowHandler(OptionsFlow):
                     self.config_entry,
                     data={CONF_EMAIL: email, CONF_PASSWORD: password},
                 )
-                # Store polling intervals as options so the coordinators pick them up
-                options = {
-                    conf_key: user_input[conf_key]
-                    for conf_key, _default in POLLING_INTERVAL_FIELDS
-                }
-                result = self.async_create_entry(title=email, data=options)
-                # Reload the integration so the new intervals take effect immediately
-                self.hass.async_create_task(
-                    self.hass.config_entries.async_reload(self.config_entry.entry_id)
+                # Keep existing options (polling intervals) untouched
+                result = self.async_create_entry(
+                    title=email,
+                    data=dict(self.config_entry.options or {}),
+                )
+                # Reload the integration so the new credentials take effect immediately
+                # (async_schedule_reload is synchronous and schedules the reload itself)
+                self.hass.config_entries.async_schedule_reload(
+                    self.config_entry.entry_id
                 )
                 return result
             errors["base"] = error_key or "invalid_auth"
 
-        data_schema: dict = {
-            vol.Required(
-                CONF_EMAIL, default=self.config_entry.data.get(CONF_EMAIL)
-            ): str,
-            vol.Required(CONF_PASSWORD): str,
-        }
+        return self.async_show_form(
+            step_id="credentials",
+            data_schema=vol.Schema(
+                {
+                    vol.Required(
+                        CONF_EMAIL, default=self.config_entry.data.get(CONF_EMAIL)
+                    ): str,
+                    vol.Required(CONF_PASSWORD): str,
+                }
+            ),
+            errors=errors,
+        )
+
+    async def async_step_polling(
+        self, user_input: dict[str, Any] | None = None
+    ) -> FlowResult:
+        """Update the polling intervals (no credentials required)."""
+        current_options = self.config_entry.options or {}
+
+        if user_input is not None:
+            result = self.async_create_entry(
+                title=self.config_entry.title,
+                data={
+                    conf_key: user_input[conf_key]
+                    for conf_key, _default in POLLING_INTERVAL_FIELDS
+                },
+            )
+            # Reload the integration so the new intervals take effect immediately
+            # (async_schedule_reload is synchronous and schedules the reload itself)
+            self.hass.config_entries.async_schedule_reload(
+                self.config_entry.entry_id
+            )
+            return result
+
+        data_schema: dict = {}
         for conf_key, default in POLLING_INTERVAL_FIELDS:
             data_schema[
                 vol.Required(
@@ -187,7 +234,6 @@ class FeellooOptionsFlowHandler(OptionsFlow):
             ] = UPDATE_INTERVAL_VALIDATOR
 
         return self.async_show_form(
-            step_id="init",
+            step_id="polling",
             data_schema=vol.Schema(data_schema),
-            errors=errors,
         )

@@ -242,8 +242,10 @@ class FeellooMainCoordinator(DataUpdateCoordinator):
         """Shutdown the coordinator."""
         if self._cancel_token_refresh:
             self._cancel_token_refresh()
+            self._cancel_token_refresh = None
         if self._cancel_fast_polling_listen:
             self._cancel_fast_polling_listen()
+            self._cancel_fast_polling_listen = None
         self._stop_fast_polling_timer()
         await super().async_shutdown()
 

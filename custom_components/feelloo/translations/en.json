@@ -20,11 +20,32 @@
   "options": {
     "step": {
       "init": {
+        "title": "Feelloo Options"
+      },
+      "menu": {
         "title": "Feelloo Options",
-        "description": "Update your Feelloo credentials and polling intervals (in minutes, from 1 min to 24 h).",
+        "description": "What would you like to configure?",
+        "menu_options": {
+          "credentials": "Account credentials",
+          "polling": "Polling intervals"
+        },
+        "menu_option_descriptions": {
+          "credentials": "Update the email and password of your Feelloo account.",
+          "polling": "Update how often the Feelloo API is polled (1 min to 24 h)."
+        }
+      },
+      "credentials": {
+        "title": "Account credentials",
+        "description": "Update your Feelloo credentials.",
         "data": {
           "email": "Email",
-          "password": "Password",
+          "password": "Password"
+        }
+      },
+      "polling": {
+        "title": "Polling intervals",
+        "description": "Set the polling intervals in minutes (from 1 min to 24 h). The fast polling (1 min) and the token refresh (50 min) remain fixed.",
+        "data": {
           "cats_update_interval": "Cats / GPS interval (min)",
           "activity_update_interval": "Daily activity interval (min)",
           "activity_week_update_interval": "Weekly activity interval (min)",

@@ -20,11 +20,32 @@
   "options": {
     "step": {
       "init": {
+        "title": "Options Feelloo"
+      },
+      "menu": {
         "title": "Options Feelloo",
-        "description": "Mettez à jour vos identifiants Feelloo et les intervalles de mise à jour (en minutes, de 1 min à 24 h).",
+        "description": "Que souhaitez-vous configurer ?",
+        "menu_options": {
+          "credentials": "Identifiants du compte",
+          "polling": "Intervalles de mise à jour"
+        },
+        "menu_option_descriptions": {
+          "credentials": "Modifier l'email et le mot de passe du compte Feelloo.",
+          "polling": "Modifier la fréquence d'interrogation de l'API Feelloo (1 min à 24 h)."
+        }
+      },
+      "credentials": {
+        "title": "Identifiants du compte",
+        "description": "Mettez à jour vos identifiants Feelloo.",
         "data": {
           "email": "Email",
-          "password": "Mot de passe",
+          "password": "Mot de passe"
+        }
+      },
+      "polling": {
+        "title": "Intervalles de mise à jour",
+        "description": "Configurez les intervalles de polling en minutes (de 1 min à 24 h). Le fast polling (1 min) et le rafraîchissement du jeton (50 min) restent fixes.",
+        "data": {
           "cats_update_interval": "Intervalle chats / GPS (min)",
           "activity_update_interval": "Intervalle activité du jour (min)",
           "activity_week_update_interval": "Intervalle activité semaine (min)",
