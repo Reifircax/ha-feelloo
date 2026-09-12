@@ -13,10 +13,22 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
-from .const import DOMAIN
+from .const import (
+    DOMAIN,
+    CONF_ACTIVITY_ENABLED,
+    CONF_ACTIVITY_WEEK_ENABLED,
+    CONF_ACTIVITY_MONTH_ENABLED,
+    CONF_TERRITORY_ENABLED,
+    CONF_SESSION_ENABLED,
+)
 from .coordinator import FeellooMainCoordinator, FeellooActivityCoordinator, FeellooTerritoryCoordinator, FeellooSessionCoordinator, FeellooActivityWeekCoordinator, FeellooActivityMonthCoordinator
 
 _LOGGER = logging.getLogger(__name__)
+
+
+def _is_polling_enabled(entry: ConfigEntry, conf_key: str) -> bool:
+    """Return whether a polling (and its sensors) is enabled in the entry options."""
+    return bool((entry.options or {}).get(conf_key, True))
 
 
 def _parse_timestamp(ts):
@@ -110,7 +122,7 @@ async def async_setup_entry(
         ])
         
         activity = coordinators.get("activity")
-        if activity:
+        if activity and _is_polling_enabled(entry, CONF_ACTIVITY_ENABLED):
             sensors.extend([
                 FeellooActivitySensor(activity, cat_uid, name),
                 FeellooActivityRestSensor(activity, cat_uid, name),
@@ -119,7 +131,7 @@ async def async_setup_entry(
             ])
         
         territory = coordinators.get("territory")
-        if territory:
+        if territory and _is_polling_enabled(entry, CONF_TERRITORY_ENABLED):
             sensors.extend([
                 FeellooLastOutingStartSensor(territory, cat_uid, name),
                 FeellooLastOutingEndSensor(territory, cat_uid, name),
@@ -127,7 +139,7 @@ async def async_setup_entry(
             ])
         
         session = coordinators.get("session")
-        if session:
+        if session and _is_polling_enabled(entry, CONF_SESSION_ENABLED):
             sensors.extend([
                 FeellooLastSessionDurationSensor(session, cat_uid, name),
                 FeellooLastSessionPointsCountSensor(session, cat_uid, name),
@@ -136,7 +148,7 @@ async def async_setup_entry(
             ])
         
         activity_week = coordinators.get("activity_week")
-        if activity_week:
+        if activity_week and _is_polling_enabled(entry, CONF_ACTIVITY_WEEK_ENABLED):
             sensors.extend([
                 FeellooActivityRestWeekSensor(activity_week, cat_uid, name),
                 FeellooActivityCalmWeekSensor(activity_week, cat_uid, name),
@@ -144,7 +156,7 @@ async def async_setup_entry(
             ])
         
         activity_month = coordinators.get("activity_month")
-        if activity_month:
+        if activity_month and _is_polling_enabled(entry, CONF_ACTIVITY_MONTH_ENABLED):
             sensors.extend([
                 FeellooActivityRestMonthSensor(activity_month, cat_uid, name),
                 FeellooActivityCalmMonthSensor(activity_month, cat_uid, name),

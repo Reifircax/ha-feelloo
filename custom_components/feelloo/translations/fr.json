@@ -44,14 +44,32 @@
       },
       "polling": {
         "title": "Intervalles de mise à jour",
-        "description": "Configurez les intervalles de polling en minutes (de 1 min à 24 h). Le fast polling (1 min) et le rafraîchissement du jeton (50 min) restent fixes.",
+        "description": "Configurez les intervalles de polling en minutes (de 1 min à 24 h). Décocher une case désactive le polling et supprime les capteurs associés. Le fast polling (1 min) et le rafraîchissement du jeton (50 min) restent fixes.",
         "data": {
           "cats_update_interval": "Intervalle chats / GPS (min)",
+          "activity_enabled": "Activer l'activité du jour",
           "activity_update_interval": "Intervalle activité du jour (min)",
+          "activity_week_enabled": "Activer l'activité de la semaine",
           "activity_week_update_interval": "Intervalle activité semaine (min)",
+          "activity_month_enabled": "Activer l'activité du mois",
           "activity_month_update_interval": "Intervalle activité mois (min)",
+          "territory_enabled": "Activer le territoire (trajets)",
           "territory_update_interval": "Intervalle territoire (min)",
+          "session_enabled": "Activer les détails de session",
           "session_update_interval": "Intervalle détails session (min)"
+        },
+        "data_description": {
+          "cats_update_interval": "Position, batterie, signal et toutes les données principales des chats. Toujours actif.",
+          "activity_enabled": "Statistiques du jour (repos, calme, actif).",
+          "activity_update_interval": "Fréquence de mise à jour de l'activité du jour.",
+          "activity_week_enabled": "Statistiques de la semaine (depuis lundi).",
+          "activity_week_update_interval": "Fréquence de mise à jour de l'activité de la semaine.",
+          "activity_month_enabled": "Statistiques du mois (depuis le 1er).",
+          "activity_month_update_interval": "Fréquence de mise à jour de l'activité du mois.",
+          "territory_enabled": "Trajets du territoire (dernières sorties et sessions). Les détails de session en dépendent.",
+          "territory_update_interval": "Fréquence de mise à jour des trajets du territoire.",
+          "session_enabled": "Détail de la dernière session (durée, points, horaires).",
+          "session_update_interval": "Fréquence de mise à jour du détail de la dernière session."
         }
       }
     },

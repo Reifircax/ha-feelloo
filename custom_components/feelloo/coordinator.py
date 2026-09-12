@@ -30,12 +30,22 @@ from .const import (
     CONF_ACTIVITY_MONTH_UPDATE_INTERVAL,
     CONF_TERRITORY_UPDATE_INTERVAL,
     CONF_SESSION_UPDATE_INTERVAL,
+    CONF_ACTIVITY_ENABLED,
+    CONF_ACTIVITY_WEEK_ENABLED,
+    CONF_ACTIVITY_MONTH_ENABLED,
+    CONF_TERRITORY_ENABLED,
+    CONF_SESSION_ENABLED,
     DEFAULT_CATS_UPDATE_INTERVAL,
     DEFAULT_ACTIVITY_UPDATE_INTERVAL,
     DEFAULT_ACTIVITY_WEEK_UPDATE_INTERVAL,
     DEFAULT_ACTIVITY_MONTH_UPDATE_INTERVAL,
     DEFAULT_TERRITORY_UPDATE_INTERVAL,
     DEFAULT_SESSION_UPDATE_INTERVAL,
+    DEFAULT_ACTIVITY_ENABLED,
+    DEFAULT_ACTIVITY_WEEK_ENABLED,
+    DEFAULT_ACTIVITY_MONTH_ENABLED,
+    DEFAULT_TERRITORY_ENABLED,
+    DEFAULT_SESSION_ENABLED,
     MIN_UPDATE_INTERVAL_MINUTES,
     MAX_UPDATE_INTERVAL_MINUTES,
     ENDPOINT_CATS,
@@ -53,13 +63,23 @@ _LOGGER = logging.getLogger(__name__)
 API_TIMEOUT = aiohttp.ClientTimeout(total=30)
 
 
-def _get_update_interval(entry: ConfigEntry, conf_key: str, default_minutes: int) -> timedelta:
+def _get_update_interval(
+    entry: ConfigEntry,
+    conf_key: str,
+    default_minutes: int,
+    enabled_key: str | None = None,
+    default_enabled: bool = True,
+) -> timedelta | None:
     """Read a user-configurable update interval (in minutes) from the entry options.
 
+    Returns ``None`` when the polling is disabled (no automatic refresh).
     The value is clamped to the allowed [1 minute, 24 hours] range.
-    Falls back to the default when unset or invalid.
+    Falls back to the default when unset or invalid. When ``enabled_key`` is
+    ``None`` the interval cannot be disabled (e.g. cats / GPS polling).
     """
     options = entry.options or {}
+    if enabled_key is not None and not options.get(enabled_key, default_enabled):
+        return None
     try:
         minutes = int(options.get(conf_key, default_minutes))
     except (TypeError, ValueError):
@@ -399,7 +419,11 @@ class FeellooActivityCoordinator(DataUpdateCoordinator):
             _LOGGER,
             name=f"{DOMAIN}_activity",
             update_interval=_get_update_interval(
-                entry, CONF_ACTIVITY_UPDATE_INTERVAL, DEFAULT_ACTIVITY_UPDATE_INTERVAL
+                entry,
+                conf_key=CONF_ACTIVITY_UPDATE_INTERVAL,
+                default_minutes=DEFAULT_ACTIVITY_UPDATE_INTERVAL,
+                enabled_key=CONF_ACTIVITY_ENABLED,
+                default_enabled=DEFAULT_ACTIVITY_ENABLED,
             ),
         )
 
@@ -451,7 +475,11 @@ class FeellooActivityWeekCoordinator(DataUpdateCoordinator):
             _LOGGER,
             name=f"{DOMAIN}_activity_week",
             update_interval=_get_update_interval(
-                entry, CONF_ACTIVITY_WEEK_UPDATE_INTERVAL, DEFAULT_ACTIVITY_WEEK_UPDATE_INTERVAL
+                entry,
+                conf_key=CONF_ACTIVITY_WEEK_UPDATE_INTERVAL,
+                default_minutes=DEFAULT_ACTIVITY_WEEK_UPDATE_INTERVAL,
+                enabled_key=CONF_ACTIVITY_WEEK_ENABLED,
+                default_enabled=DEFAULT_ACTIVITY_WEEK_ENABLED,
             ),
         )
 
@@ -506,7 +534,11 @@ class FeellooActivityMonthCoordinator(DataUpdateCoordinator):
             _LOGGER,
             name=f"{DOMAIN}_activity_month",
             update_interval=_get_update_interval(
-                entry, CONF_ACTIVITY_MONTH_UPDATE_INTERVAL, DEFAULT_ACTIVITY_MONTH_UPDATE_INTERVAL
+                entry,
+                conf_key=CONF_ACTIVITY_MONTH_UPDATE_INTERVAL,
+                default_minutes=DEFAULT_ACTIVITY_MONTH_UPDATE_INTERVAL,
+                enabled_key=CONF_ACTIVITY_MONTH_ENABLED,
+                default_enabled=DEFAULT_ACTIVITY_MONTH_ENABLED,
             ),
         )
 
@@ -561,7 +593,11 @@ class FeellooTerritoryCoordinator(DataUpdateCoordinator):
             _LOGGER,
             name=f"{DOMAIN}_territory",
             update_interval=_get_update_interval(
-                entry, CONF_TERRITORY_UPDATE_INTERVAL, DEFAULT_TERRITORY_UPDATE_INTERVAL
+                entry,
+                conf_key=CONF_TERRITORY_UPDATE_INTERVAL,
+                default_minutes=DEFAULT_TERRITORY_UPDATE_INTERVAL,
+                enabled_key=CONF_TERRITORY_ENABLED,
+                default_enabled=DEFAULT_TERRITORY_ENABLED,
             ),
         )
 
@@ -625,7 +661,11 @@ class FeellooSessionCoordinator(DataUpdateCoordinator):
             _LOGGER,
             name=f"{DOMAIN}_session",
             update_interval=_get_update_interval(
-                entry, CONF_SESSION_UPDATE_INTERVAL, DEFAULT_SESSION_UPDATE_INTERVAL
+                entry,
+                conf_key=CONF_SESSION_UPDATE_INTERVAL,
+                default_minutes=DEFAULT_SESSION_UPDATE_INTERVAL,
+                enabled_key=CONF_SESSION_ENABLED,
+                default_enabled=DEFAULT_SESSION_ENABLED,
             ),
         )
 

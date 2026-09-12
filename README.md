@@ -56,7 +56,7 @@ The integration uses **six separate DataUpdateCoordinators** for optimal polling
 | Territory | `/users/cats/{cat_id}/territory/paths` | 15 minutes |
 | Session | `/users/cats/{cat_id}/territory/paths/{session_id}` | 30 minutes |
 
-All these polling intervals are **configurable between 1 minute and 24 hours** via **Configure → Options → Polling intervals** (value entered in minutes), without needing to re-enter your credentials. The Firebase token refresh (50 minutes) and the fast polling (1 minute) are fixed. Credentials can be changed separately via **Configure → Options → Account credentials**.
+All these polling intervals are **configurable between 1 minute and 24 hours** via **Configure → Options → Polling intervals** (value entered in minutes), without needing to re-enter your credentials. Each polling (daily/weekly/monthly activity, territory, session) can also be **disabled** with its own toggle — except the cats / GPS polling, which is always active. When a polling is disabled, its **associated sensors are removed** and no more API requests are made for it. The Firebase token refresh (50 minutes) and the fast polling (1 minute) are fixed. Credentials can be changed separately via **Configure → Options → Account credentials**.
 
 All coordinators share a single Firebase auth manager with automatic token refresh every 50 minutes.
 

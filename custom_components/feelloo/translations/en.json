@@ -44,14 +44,32 @@
       },
       "polling": {
         "title": "Polling intervals",
-        "description": "Set the polling intervals in minutes (from 1 min to 24 h). The fast polling (1 min) and the token refresh (50 min) remain fixed.",
+        "description": "Set the polling intervals in minutes (from 1 min to 24 h). Unchecking a box disables the polling and removes its associated sensors. The fast polling (1 min) and the token refresh (50 min) remain fixed.",
         "data": {
           "cats_update_interval": "Cats / GPS interval (min)",
+          "activity_enabled": "Enable daily activity",
           "activity_update_interval": "Daily activity interval (min)",
+          "activity_week_enabled": "Enable weekly activity",
           "activity_week_update_interval": "Weekly activity interval (min)",
+          "activity_month_enabled": "Enable monthly activity",
           "activity_month_update_interval": "Monthly activity interval (min)",
+          "territory_enabled": "Enable territory (paths)",
           "territory_update_interval": "Territory interval (min)",
+          "session_enabled": "Enable session details",
           "session_update_interval": "Session details interval (min)"
+        },
+        "data_description": {
+          "cats_update_interval": "Position, battery, signal strength and all main cat data. Always active.",
+          "activity_enabled": "Daily stats (rest, calm, active).",
+          "activity_update_interval": "How often the daily activity is updated.",
+          "activity_week_enabled": "Weekly stats (since Monday).",
+          "activity_week_update_interval": "How often the weekly activity is updated.",
+          "activity_month_enabled": "Monthly stats (since the 1st).",
+          "activity_month_update_interval": "How often the monthly activity is updated.",
+          "territory_enabled": "Territory paths (last outings and sessions). Last session details depend on it.",
+          "territory_update_interval": "How often the territory paths are updated.",
+          "session_enabled": "Last session details (duration, points, timings).",
+          "session_update_interval": "How often the last session details are updated."
         }
       }
     },

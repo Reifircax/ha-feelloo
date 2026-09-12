@@ -24,12 +24,22 @@ from .const import (
     CONF_ACTIVITY_MONTH_UPDATE_INTERVAL,
     CONF_TERRITORY_UPDATE_INTERVAL,
     CONF_SESSION_UPDATE_INTERVAL,
+    CONF_ACTIVITY_ENABLED,
+    CONF_ACTIVITY_WEEK_ENABLED,
+    CONF_ACTIVITY_MONTH_ENABLED,
+    CONF_TERRITORY_ENABLED,
+    CONF_SESSION_ENABLED,
     DEFAULT_CATS_UPDATE_INTERVAL,
     DEFAULT_ACTIVITY_UPDATE_INTERVAL,
     DEFAULT_ACTIVITY_WEEK_UPDATE_INTERVAL,
     DEFAULT_ACTIVITY_MONTH_UPDATE_INTERVAL,
     DEFAULT_TERRITORY_UPDATE_INTERVAL,
     DEFAULT_SESSION_UPDATE_INTERVAL,
+    DEFAULT_ACTIVITY_ENABLED,
+    DEFAULT_ACTIVITY_WEEK_ENABLED,
+    DEFAULT_ACTIVITY_MONTH_ENABLED,
+    DEFAULT_TERRITORY_ENABLED,
+    DEFAULT_SESSION_ENABLED,
     MIN_UPDATE_INTERVAL_MINUTES,
     MAX_UPDATE_INTERVAL_MINUTES,
     FIREBASE_API_KEY,
@@ -52,14 +62,19 @@ UPDATE_INTERVAL_VALIDATOR = vol.All(
     vol.Range(min=MIN_UPDATE_INTERVAL_MINUTES, max=MAX_UPDATE_INTERVAL_MINUTES),
 )
 
-# Configurable polling intervals: (conf_key, default_minutes)
-POLLING_INTERVAL_FIELDS = [
-    (CONF_CATS_UPDATE_INTERVAL, DEFAULT_CATS_UPDATE_INTERVAL),
-    (CONF_ACTIVITY_UPDATE_INTERVAL, DEFAULT_ACTIVITY_UPDATE_INTERVAL),
-    (CONF_ACTIVITY_WEEK_UPDATE_INTERVAL, DEFAULT_ACTIVITY_WEEK_UPDATE_INTERVAL),
-    (CONF_ACTIVITY_MONTH_UPDATE_INTERVAL, DEFAULT_ACTIVITY_MONTH_UPDATE_INTERVAL),
-    (CONF_TERRITORY_UPDATE_INTERVAL, DEFAULT_TERRITORY_UPDATE_INTERVAL),
-    (CONF_SESSION_UPDATE_INTERVAL, DEFAULT_SESSION_UPDATE_INTERVAL),
+# Configurable polling sections: (enabled_key, default_enabled, interval_key, default_minutes)
+# The cats / GPS polling is always active and is not part of this list.
+POLLING_SECTIONS = [
+    (CONF_ACTIVITY_ENABLED, DEFAULT_ACTIVITY_ENABLED,
+     CONF_ACTIVITY_UPDATE_INTERVAL, DEFAULT_ACTIVITY_UPDATE_INTERVAL),
+    (CONF_ACTIVITY_WEEK_ENABLED, DEFAULT_ACTIVITY_WEEK_ENABLED,
+     CONF_ACTIVITY_WEEK_UPDATE_INTERVAL, DEFAULT_ACTIVITY_WEEK_UPDATE_INTERVAL),
+    (CONF_ACTIVITY_MONTH_ENABLED, DEFAULT_ACTIVITY_MONTH_ENABLED,
+     CONF_ACTIVITY_MONTH_UPDATE_INTERVAL, DEFAULT_ACTIVITY_MONTH_UPDATE_INTERVAL),
+    (CONF_TERRITORY_ENABLED, DEFAULT_TERRITORY_ENABLED,
+     CONF_TERRITORY_UPDATE_INTERVAL, DEFAULT_TERRITORY_UPDATE_INTERVAL),
+    (CONF_SESSION_ENABLED, DEFAULT_SESSION_ENABLED,
+     CONF_SESSION_UPDATE_INTERVAL, DEFAULT_SESSION_UPDATE_INTERVAL),
 ]
 
 
@@ -212,10 +227,8 @@ class FeellooOptionsFlowHandler(OptionsFlow):
         if user_input is not None:
             result = self.async_create_entry(
                 title=self.config_entry.title,
-                data={
-                    conf_key: user_input[conf_key]
-                    for conf_key, _default in POLLING_INTERVAL_FIELDS
-                },
+                # The schema only contains our polling fields, so we store them all.
+                data=dict(user_input),
             )
             # Reload the integration so the new intervals take effect immediately
             # (async_schedule_reload is synchronous and schedules the reload itself)
@@ -224,12 +237,31 @@ class FeellooOptionsFlowHandler(OptionsFlow):
             )
             return result
 
-        data_schema: dict = {}
-        for conf_key, default in POLLING_INTERVAL_FIELDS:
+        # Cats / GPS polling is always active (no enable flag, only the interval)
+        data_schema: dict = {
+            vol.Required(
+                CONF_CATS_UPDATE_INTERVAL,
+                default=current_options.get(
+                    CONF_CATS_UPDATE_INTERVAL, DEFAULT_CATS_UPDATE_INTERVAL
+                ),
+            ): UPDATE_INTERVAL_VALIDATOR,
+        }
+        for (
+            enabled_key,
+            default_enabled,
+            interval_key,
+            default_minutes,
+        ) in POLLING_SECTIONS:
             data_schema[
                 vol.Required(
-                    conf_key,
-                    default=current_options.get(conf_key, default),
+                    enabled_key,
+                    default=current_options.get(enabled_key, default_enabled),
+                )
+            ] = bool
+            data_schema[
+                vol.Required(
+                    interval_key,
+                    default=current_options.get(interval_key, default_minutes),
                 )
             ] = UPDATE_INTERVAL_VALIDATOR
 

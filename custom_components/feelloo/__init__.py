@@ -65,6 +65,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         ("activity_month", activity_month_coordinator),
         ("session", session_coordinator),
     ]:
+        if coordinator.update_interval is None:
+            _LOGGER.debug(
+                "%s coordinator is disabled in options, skipping first refresh",
+                coordinator_name,
+            )
+            continue
         try:
             await coordinator.async_config_entry_first_refresh()
         except UpdateFailed as exc:

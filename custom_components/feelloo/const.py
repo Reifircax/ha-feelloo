@@ -32,6 +32,21 @@ DEFAULT_ACTIVITY_MONTH_UPDATE_INTERVAL = 360
 DEFAULT_TERRITORY_UPDATE_INTERVAL = 15
 DEFAULT_SESSION_UPDATE_INTERVAL = 30
 
+# Enable/disable flags for the configurable polling intervals
+# (the cats / GPS polling is always active and has no flag)
+CONF_ACTIVITY_ENABLED = "activity_enabled"
+CONF_ACTIVITY_WEEK_ENABLED = "activity_week_enabled"
+CONF_ACTIVITY_MONTH_ENABLED = "activity_month_enabled"
+CONF_TERRITORY_ENABLED = "territory_enabled"
+CONF_SESSION_ENABLED = "session_enabled"
+
+# Default enabled states
+DEFAULT_ACTIVITY_ENABLED = True
+DEFAULT_ACTIVITY_WEEK_ENABLED = True
+DEFAULT_ACTIVITY_MONTH_ENABLED = True
+DEFAULT_TERRITORY_ENABLED = True
+DEFAULT_SESSION_ENABLED = True
+
 # Allowed range for user-configurable update intervals (minutes)
 MIN_UPDATE_INTERVAL_MINUTES = 1
 MAX_UPDATE_INTERVAL_MINUTES = 1440  # 24h
