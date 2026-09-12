@@ -21,10 +21,16 @@
     "step": {
       "init": {
         "title": "Options Feelloo",
-        "description": "Mettez à jour vos identifiants Feelloo.",
+        "description": "Mettez à jour vos identifiants Feelloo et les intervalles de mise à jour (en minutes, de 1 min à 24 h).",
         "data": {
           "email": "Email",
-          "password": "Mot de passe"
+          "password": "Mot de passe",
+          "cats_update_interval": "Intervalle chats / GPS (min)",
+          "activity_update_interval": "Intervalle activité du jour (min)",
+          "activity_week_update_interval": "Intervalle activité semaine (min)",
+          "activity_month_update_interval": "Intervalle activité mois (min)",
+          "territory_update_interval": "Intervalle territoire (min)",
+          "session_update_interval": "Intervalle détails session (min)"
         }
       }
     },

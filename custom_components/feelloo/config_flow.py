@@ -18,6 +18,20 @@ from .const import (
     DOMAIN,
     CONF_EMAIL,
     CONF_PASSWORD,
+    CONF_CATS_UPDATE_INTERVAL,
+    CONF_ACTIVITY_UPDATE_INTERVAL,
+    CONF_ACTIVITY_WEEK_UPDATE_INTERVAL,
+    CONF_ACTIVITY_MONTH_UPDATE_INTERVAL,
+    CONF_TERRITORY_UPDATE_INTERVAL,
+    CONF_SESSION_UPDATE_INTERVAL,
+    DEFAULT_CATS_UPDATE_INTERVAL,
+    DEFAULT_ACTIVITY_UPDATE_INTERVAL,
+    DEFAULT_ACTIVITY_WEEK_UPDATE_INTERVAL,
+    DEFAULT_ACTIVITY_MONTH_UPDATE_INTERVAL,
+    DEFAULT_TERRITORY_UPDATE_INTERVAL,
+    DEFAULT_SESSION_UPDATE_INTERVAL,
+    MIN_UPDATE_INTERVAL_MINUTES,
+    MAX_UPDATE_INTERVAL_MINUTES,
     FIREBASE_API_KEY,
     FIREBASE_SIGNIN_URL,
 )
@@ -32,6 +46,21 @@ AUTH_SCHEMA = vol.Schema(
         vol.Required(CONF_PASSWORD): str,
     }
 )
+
+UPDATE_INTERVAL_VALIDATOR = vol.All(
+    vol.Coerce(int),
+    vol.Range(min=MIN_UPDATE_INTERVAL_MINUTES, max=MAX_UPDATE_INTERVAL_MINUTES),
+)
+
+# Configurable polling intervals: (conf_key, default_minutes)
+POLLING_INTERVAL_FIELDS = [
+    (CONF_CATS_UPDATE_INTERVAL, DEFAULT_CATS_UPDATE_INTERVAL),
+    (CONF_ACTIVITY_UPDATE_INTERVAL, DEFAULT_ACTIVITY_UPDATE_INTERVAL),
+    (CONF_ACTIVITY_WEEK_UPDATE_INTERVAL, DEFAULT_ACTIVITY_WEEK_UPDATE_INTERVAL),
+    (CONF_ACTIVITY_MONTH_UPDATE_INTERVAL, DEFAULT_ACTIVITY_MONTH_UPDATE_INTERVAL),
+    (CONF_TERRITORY_UPDATE_INTERVAL, DEFAULT_TERRITORY_UPDATE_INTERVAL),
+    (CONF_SESSION_UPDATE_INTERVAL, DEFAULT_SESSION_UPDATE_INTERVAL),
+]
 
 
 async def _async_test_credentials(hass, email: str, password: str) -> tuple[bool, str | None]:
@@ -117,6 +146,8 @@ class FeellooOptionsFlowHandler(OptionsFlow):
         """Manage the options."""
         errors: dict[str, str] = {}
 
+        current_options = self.config_entry.options or {}
+
         if user_input is not None:
             email = user_input[CONF_EMAIL].strip().casefold()
             password = user_input[CONF_PASSWORD]
@@ -128,18 +159,35 @@ class FeellooOptionsFlowHandler(OptionsFlow):
                     self.config_entry,
                     data={CONF_EMAIL: email, CONF_PASSWORD: password},
                 )
-                return self.async_create_entry(title=email, data={})
+                # Store polling intervals as options so the coordinators pick them up
+                options = {
+                    conf_key: user_input[conf_key]
+                    for conf_key, _default in POLLING_INTERVAL_FIELDS
+                }
+                result = self.async_create_entry(title=email, data=options)
+                # Reload the integration so the new intervals take effect immediately
+                self.hass.async_create_task(
+                    self.hass.config_entries.async_reload(self.config_entry.entry_id)
+                )
+                return result
             errors["base"] = error_key or "invalid_auth"
+
+        data_schema: dict = {
+            vol.Required(
+                CONF_EMAIL, default=self.config_entry.data.get(CONF_EMAIL)
+            ): str,
+            vol.Required(CONF_PASSWORD): str,
+        }
+        for conf_key, default in POLLING_INTERVAL_FIELDS:
+            data_schema[
+                vol.Required(
+                    conf_key,
+                    default=current_options.get(conf_key, default),
+                )
+            ] = UPDATE_INTERVAL_VALIDATOR
 
         return self.async_show_form(
             step_id="init",
-            data_schema=vol.Schema(
-                {
-                    vol.Required(
-                        CONF_EMAIL, default=self.config_entry.data.get(CONF_EMAIL)
-                    ): str,
-                    vol.Required(CONF_PASSWORD): str,
-                }
-            ),
+            data_schema=vol.Schema(data_schema),
             errors=errors,
         )

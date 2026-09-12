@@ -21,10 +21,16 @@
     "step": {
       "init": {
         "title": "Feelloo Options",
-        "description": "Update your Feelloo credentials.",
+        "description": "Update your Feelloo credentials and polling intervals (in minutes, from 1 min to 24 h).",
         "data": {
           "email": "Email",
-          "password": "Password"
+          "password": "Password",
+          "cats_update_interval": "Cats / GPS interval (min)",
+          "activity_update_interval": "Daily activity interval (min)",
+          "activity_week_update_interval": "Weekly activity interval (min)",
+          "activity_month_update_interval": "Monthly activity interval (min)",
+          "territory_update_interval": "Territory interval (min)",
+          "session_update_interval": "Session details interval (min)"
         }
       }
     },

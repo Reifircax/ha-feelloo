@@ -22,16 +22,22 @@ from .const import (
     FIREBASE_SIGNIN_URL,
     FIREBASE_REFRESH_URL,
     BASE_URL,
-    CATS_UPDATE_INTERVAL,
-    ACTIVITY_UPDATE_INTERVAL,
-    ACTIVITY_WEEK_UPDATE_INTERVAL,
-    ACTIVITY_MONTH_UPDATE_INTERVAL,
-    TERRITORY_UPDATE_INTERVAL,
-    SESSION_UPDATE_INTERVAL,
     TOKEN_REFRESH_INTERVAL,
     FAST_POLLING_INTERVAL,
-    CONF_EMAIL,
-    CONF_PASSWORD,
+    CONF_CATS_UPDATE_INTERVAL,
+    CONF_ACTIVITY_UPDATE_INTERVAL,
+    CONF_ACTIVITY_WEEK_UPDATE_INTERVAL,
+    CONF_ACTIVITY_MONTH_UPDATE_INTERVAL,
+    CONF_TERRITORY_UPDATE_INTERVAL,
+    CONF_SESSION_UPDATE_INTERVAL,
+    DEFAULT_CATS_UPDATE_INTERVAL,
+    DEFAULT_ACTIVITY_UPDATE_INTERVAL,
+    DEFAULT_ACTIVITY_WEEK_UPDATE_INTERVAL,
+    DEFAULT_ACTIVITY_MONTH_UPDATE_INTERVAL,
+    DEFAULT_TERRITORY_UPDATE_INTERVAL,
+    DEFAULT_SESSION_UPDATE_INTERVAL,
+    MIN_UPDATE_INTERVAL_MINUTES,
+    MAX_UPDATE_INTERVAL_MINUTES,
     ENDPOINT_CATS,
     ENDPOINT_CAT_DETAIL,
     ENDPOINT_ACTIVITY,
@@ -45,6 +51,21 @@ from .const import (
 _LOGGER = logging.getLogger(__name__)
 
 API_TIMEOUT = aiohttp.ClientTimeout(total=30)
+
+
+def _get_update_interval(entry: ConfigEntry, conf_key: str, default_minutes: int) -> timedelta:
+    """Read a user-configurable update interval (in minutes) from the entry options.
+
+    The value is clamped to the allowed [1 minute, 24 hours] range.
+    Falls back to the default when unset or invalid.
+    """
+    options = entry.options or {}
+    try:
+        minutes = int(options.get(conf_key, default_minutes))
+    except (TypeError, ValueError):
+        minutes = default_minutes
+    minutes = max(MIN_UPDATE_INTERVAL_MINUTES, min(MAX_UPDATE_INTERVAL_MINUTES, minutes))
+    return timedelta(minutes=minutes)
 
 
 class FeellooAuthManager:
@@ -174,7 +195,7 @@ class FeellooAuthManager:
 
 
 class FeellooMainCoordinator(DataUpdateCoordinator):
-    """Coordinator for main cats data — polls /users/cats every 5 minutes."""
+    """Coordinator for main cats data — polls /users/cats (configurable interval)."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, auth: FeellooAuthManager) -> None:
         """Initialize the coordinator."""
@@ -189,7 +210,9 @@ class FeellooMainCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name=f"{DOMAIN}_main",
-            update_interval=CATS_UPDATE_INTERVAL,
+            update_interval=_get_update_interval(
+                entry, CONF_CATS_UPDATE_INTERVAL, DEFAULT_CATS_UPDATE_INTERVAL
+            ),
         )
 
     async def async_setup(self) -> None:
@@ -362,7 +385,7 @@ class FeellooMainCoordinator(DataUpdateCoordinator):
 
 
 class FeellooActivityCoordinator(DataUpdateCoordinator):
-    """Coordinator for activity data — polls /users/cats/{cat_id}/activity every 15 minutes."""
+    """Coordinator for activity data — polls /users/cats/{cat_id}/activity (configurable interval)."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, auth: FeellooAuthManager) -> None:
         """Initialize the coordinator."""
@@ -373,7 +396,9 @@ class FeellooActivityCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name=f"{DOMAIN}_activity",
-            update_interval=ACTIVITY_UPDATE_INTERVAL,
+            update_interval=_get_update_interval(
+                entry, CONF_ACTIVITY_UPDATE_INTERVAL, DEFAULT_ACTIVITY_UPDATE_INTERVAL
+            ),
         )
 
     async def _async_update_data(self) -> dict:
@@ -412,7 +437,7 @@ class FeellooActivityCoordinator(DataUpdateCoordinator):
 
 
 class FeellooActivityWeekCoordinator(DataUpdateCoordinator):
-    """Coordinator for weekly activity data — polls every hour."""
+    """Coordinator for weekly activity data — polls every hour (configurable interval)."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, auth: FeellooAuthManager) -> None:
         """Initialize the coordinator."""
@@ -423,7 +448,9 @@ class FeellooActivityWeekCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name=f"{DOMAIN}_activity_week",
-            update_interval=ACTIVITY_WEEK_UPDATE_INTERVAL,
+            update_interval=_get_update_interval(
+                entry, CONF_ACTIVITY_WEEK_UPDATE_INTERVAL, DEFAULT_ACTIVITY_WEEK_UPDATE_INTERVAL
+            ),
         )
 
     async def _async_update_data(self) -> dict:
@@ -465,7 +492,7 @@ class FeellooActivityWeekCoordinator(DataUpdateCoordinator):
 
 
 class FeellooActivityMonthCoordinator(DataUpdateCoordinator):
-    """Coordinator for monthly activity data — polls every 6 hours."""
+    """Coordinator for monthly activity data — polls every 6 hours (configurable interval)."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, auth: FeellooAuthManager) -> None:
         """Initialize the coordinator."""
@@ -476,7 +503,9 @@ class FeellooActivityMonthCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name=f"{DOMAIN}_activity_month",
-            update_interval=ACTIVITY_MONTH_UPDATE_INTERVAL,
+            update_interval=_get_update_interval(
+                entry, CONF_ACTIVITY_MONTH_UPDATE_INTERVAL, DEFAULT_ACTIVITY_MONTH_UPDATE_INTERVAL
+            ),
         )
 
     async def _async_update_data(self) -> dict:
@@ -518,7 +547,7 @@ class FeellooActivityMonthCoordinator(DataUpdateCoordinator):
 
 
 class FeellooTerritoryCoordinator(DataUpdateCoordinator):
-    """Coordinator for territory data — polls /users/cats/{cat_id}/territory/paths every 15 minutes."""
+    """Coordinator for territory data — polls /users/cats/{cat_id}/territory/paths (configurable interval)."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, auth: FeellooAuthManager) -> None:
         """Initialize the coordinator."""
@@ -529,7 +558,9 @@ class FeellooTerritoryCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name=f"{DOMAIN}_territory",
-            update_interval=TERRITORY_UPDATE_INTERVAL,
+            update_interval=_get_update_interval(
+                entry, CONF_TERRITORY_UPDATE_INTERVAL, DEFAULT_TERRITORY_UPDATE_INTERVAL
+            ),
         )
 
     async def _async_update_data(self) -> dict:
@@ -580,7 +611,7 @@ class FeellooTerritoryCoordinator(DataUpdateCoordinator):
 
 
 class FeellooSessionCoordinator(DataUpdateCoordinator):
-    """Coordinator for territory session details — polls every 30 minutes."""
+    """Coordinator for territory session details — polls every 30 minutes (configurable interval)."""
 
     def __init__(self, hass: HomeAssistant, entry: ConfigEntry, auth: FeellooAuthManager) -> None:
         """Initialize the coordinator."""
@@ -591,7 +622,9 @@ class FeellooSessionCoordinator(DataUpdateCoordinator):
             hass,
             _LOGGER,
             name=f"{DOMAIN}_session",
-            update_interval=SESSION_UPDATE_INTERVAL,
+            update_interval=_get_update_interval(
+                entry, CONF_SESSION_UPDATE_INTERVAL, DEFAULT_SESSION_UPDATE_INTERVAL
+            ),
         )
 
     async def _async_update_data(self) -> dict:

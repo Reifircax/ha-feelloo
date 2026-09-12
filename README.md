@@ -45,13 +45,18 @@ Your cats and their data will be automatically discovered.
 
 ## Architecture
 
-The integration uses **three separate DataUpdateCoordinators** for optimal polling:
+The integration uses **six separate DataUpdateCoordinators** for optimal polling:
 
-| Coordinator | Endpoint | Interval |
-|------------|----------|----------|
+| Coordinator | Endpoint | Default interval |
+|------------|----------|------------------|
 | Main | `/users/cats` + `/users/cats/{cat_id}` | 5 minutes (1 min with Petite Souris) |
-| Activity | `/users/cats/{cat_id}/activity?period_type=day` | 15 minutes |
+| Activity (day) | `/users/cats/{cat_id}/activity?period_type=day` | 15 minutes |
+| Activity (week) | `/users/cats/{cat_id}/activity?period_type=week` | 1 hour |
+| Activity (month) | `/users/cats/{cat_id}/activity?period_type=month` | 6 hours |
 | Territory | `/users/cats/{cat_id}/territory/paths` | 15 minutes |
+| Session | `/users/cats/{cat_id}/territory/paths/{session_id}` | 30 minutes |
+
+All these polling intervals are **configurable between 1 minute and 24 hours** via **Configure → Options** (value entered in minutes). The Firebase token refresh (50 minutes) and the fast polling (1 minute) are fixed.
 
 All coordinators share a single Firebase auth manager with automatic token refresh every 50 minutes.
 
@@ -60,7 +65,7 @@ All coordinators share a single Firebase auth manager with automatic token refre
 When the **Petite Souris** switch is turned ON for a cat:
 - A dedicated timer triggers the Main coordinator refresh every **1 minute**
 - This affects GPS location, signal strength, battery, and all main coordinator entities
-- When the switch is turned OFF, the timer stops and normal 5-minute polling resumes
+- When the switch is turned OFF, the timer stops and the normal configured polling resumes
 - Multiple cats can have independent fast polling timers
 
 ## Entities
@@ -143,7 +148,7 @@ Replace `{cat_name}` with your cat's name slug (lowercase, spaces as underscores
 ### Switches
 - **Petite Souris** — enables/disables extended search mode with fast polling
   - When ON: polling interval drops to **1 minute** for real-time GPS and signal strength
-  - When OFF: returns to normal **5 minute** polling
+  - When OFF: returns to the normal configured polling interval
   - Each cat has its own independent timer
 
 ### Button

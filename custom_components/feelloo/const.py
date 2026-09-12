@@ -16,13 +16,27 @@ BASE_URL = "https://linxmain.feelloo.com"
 CONF_EMAIL = "email"
 CONF_PASSWORD = "password"
 
-# Polling intervals
-CATS_UPDATE_INTERVAL = timedelta(minutes=5)
-ACTIVITY_UPDATE_INTERVAL = timedelta(minutes=15)
-ACTIVITY_WEEK_UPDATE_INTERVAL = timedelta(hours=1)
-ACTIVITY_MONTH_UPDATE_INTERVAL = timedelta(hours=6)
-TERRITORY_UPDATE_INTERVAL = timedelta(minutes=15)
-SESSION_UPDATE_INTERVAL = timedelta(minutes=30)
+# Configurable polling intervals (minutes, between 1 min and 24 h via options flow)
+CONF_CATS_UPDATE_INTERVAL = "cats_update_interval"
+CONF_ACTIVITY_UPDATE_INTERVAL = "activity_update_interval"
+CONF_ACTIVITY_WEEK_UPDATE_INTERVAL = "activity_week_update_interval"
+CONF_ACTIVITY_MONTH_UPDATE_INTERVAL = "activity_month_update_interval"
+CONF_TERRITORY_UPDATE_INTERVAL = "territory_update_interval"
+CONF_SESSION_UPDATE_INTERVAL = "session_update_interval"
+
+# Default update intervals (minutes)
+DEFAULT_CATS_UPDATE_INTERVAL = 5
+DEFAULT_ACTIVITY_UPDATE_INTERVAL = 15
+DEFAULT_ACTIVITY_WEEK_UPDATE_INTERVAL = 60
+DEFAULT_ACTIVITY_MONTH_UPDATE_INTERVAL = 360
+DEFAULT_TERRITORY_UPDATE_INTERVAL = 15
+DEFAULT_SESSION_UPDATE_INTERVAL = 30
+
+# Allowed range for user-configurable update intervals (minutes)
+MIN_UPDATE_INTERVAL_MINUTES = 1
+MAX_UPDATE_INTERVAL_MINUTES = 1440  # 24h
+
+# Fixed intervals (not user-configurable)
 TOKEN_REFRESH_INTERVAL = timedelta(minutes=50)
 FAST_POLLING_INTERVAL = timedelta(minutes=1)
 
